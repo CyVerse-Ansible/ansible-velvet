@@ -1,0 +1,34 @@
+---
+
+- name: Download velvet
+  get_url:
+    url: "http://www.ebi.ac.uk/~zerbino/velvet/velvet_{{ VERSION }}.tgz"
+    dest: "/tmp/velvet.tgz"
+
+- name: Unarchive the package
+  unarchive:
+    src: "/tmp/velvet.tgz"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Build with make
+  make:
+    chdir: "/tmp/velvet_{{ VERSION }}"
+
+- name: Copy executable files to path
+  copy:
+    remote_src: yes
+    src: "/tmp/velvet_{{ VERSION }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+  with_items:
+    - "velveth"
+    - "velvetg"
+
+- name: Remove temporary files
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "/tmp/velvet.tgz"
+    - "/tmp/velvet_{{ VERSION }}"
